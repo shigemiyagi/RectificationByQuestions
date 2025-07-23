@@ -258,16 +258,16 @@ def score_chart(chart, answers):
         if map_type == "quality":
             if chart['qualities'][map_value] >= 4:
                 is_match = True
-                reason_text = f"あなたの回答からは「{trait_desc}」という性質が垣間見えます。これは、物事への取り組み方における**{map_value}宮**のテーマを強く示唆するものです。この時間帯のホロスコープでは、天体の多くが{map_value}宮に集中しており、あなたの性格と一致します。"
+                reason_text = f"あなたの回答からは「{trait_desc}」という性質が垣間見えます。これは、物事への取り組み方における{map_value}宮のテーマを強く示唆するものです。この時間帯のホロスコープでは、天体の多くが{map_value}宮に集中しており、あなたの性格と一致します。"
         
         elif map_type == "element":
             target_planet_sign = chart['planets'].get(map_target) or chart['angles'].get(map_target)
             if target_planet_sign and target_planet_sign in ELEMENTS[map_value]:
                 is_match = True
                 if map_target == "月":
-                    reason_text = f"あなたの回答からは「{trait_desc}」という性質が垣間見えます。これは、感情の核である**月**の性質を反映するものです。この時間帯の月は**{map_value}のエレメント**に属する**{target_planet_sign}**にあり、あなたの情緒的な特徴と強く結びつきます。"
+                    reason_text = f"あなたの回答からは「{trait_desc}」という性質が垣間見えます。これは、感情の核である月の性質を反映するものです。この時間帯の月は{map_value}のエレメントに属する{target_planet_sign}にあり、あなたの情緒的な特徴と強く結びつきます。"
                 else:
-                    reason_text = f"あなたの回答からは「{trait_desc}」という性質が垣間見えます。これは、**{map_target}**が象徴する性質と関連するものです。この時間帯の{map_target}は**{map_value}のエレメント**に属する**{target_planet_sign}**にあり、あなたの行動様式と一致します。"
+                    reason_text = f"あなたの回答からは「{trait_desc}」という性質が垣間見えます。これは、{map_target}が象徴する性質と関連するものです。この時間帯の{map_target}は{map_value}のエレメントに属する{target_planet_sign}にあり、あなたの行動様式と一致します。"
 
         elif map_type == "sign_emphasis" or map_type == "multi_sign_emphasis":
             target_signs = map_value if isinstance(map_value, list) else [map_value]
@@ -282,11 +282,11 @@ def score_chart(chart, answers):
             
             if matched_targets:
                 is_match = True
-                reason_text = f"あなたの回答からは「{trait_desc}」という価値観が垣間見えます。これは**{'/'.join(target_signs)}**のテーマを強く反映するものです。この時間帯のホロスコープでは、{'、'.join(matched_targets)}が、その性質を裏付けています。"
+                reason_text = f"あなたの回答からは「{trait_desc}」という価値観が垣間見えます。これは{'/'.join(target_signs)}のテーマを強く反映するものです。この時間帯のホロスコープでは、{'、'.join(matched_targets)}が、その性質を裏付けています。"
         
         elif map_type == "emphasis" or map_type == "house_emphasis":
              is_match = True
-             reason_text = f"あなたの回答からは「{trait_desc}」という性質が垣間見えます。これは、占星術で**「{map_value}」**が象徴するテーマが、あなたの人生で重要であることを示唆するものです。この時間帯のホロスコープは、そのテーマを強調する配置を持っています。"
+             reason_text = f"あなたの回答からは「{trait_desc}」という性質が垣間見えます。これは、占星術で「{map_value}」が象徴するテーマが、あなたの人生で重要であることを示唆するものです。この時間帯のホロスコープは、そのテーマを強調する配置を持っています。"
 
         if is_match:
             score += map_weight
@@ -362,9 +362,9 @@ if st.button("鑑定する 🚀", type="primary"):
                 percentage = (candidate['score'] / max_score * 100)
                 
                 with st.container(border=True):
-                    st.subheader(f"第 {i+1} 位： **{candidate['time'].strftime('%H:%M')} ごろ**")
+                    st.subheader(f"第 {i+1} 位： {candidate['time'].strftime('%H:%M')} ごろ")
                     st.progress(int(percentage), text=f"可能性: {percentage:.0f}%")
-                    st.markdown("**▼ 西洋占星術の観点からの根拠**")
+                    st.markdown("▼ 西洋占星術の観点からの根拠")
                     unique_reasons = sorted(list(set(candidate['reasons'])))
                     for reason in unique_reasons:
                         st.markdown(f"- {reason}")
