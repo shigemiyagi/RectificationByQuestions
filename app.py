@@ -195,8 +195,25 @@ QUESTIONS = [
             "c": {"type": "emphasis", "value": "木星", "target": "天体", "weight": 2, "reason": "楽観的な切り替えは「木星」の性質です。"},
             "d": {"type": "quality", "value": "柔軟", "target": "全体", "weight": 2, "reason": "自然な忘却は「柔軟宮」の性質です。"}
         }
+    },
+    # ▼▼▼ 変更点1：新しい質問を追加 ▼▼▼
+    {
+        "q": "質問11：あなたの体型や第一印象について、人からよく言われることに最も近いものは？",
+        "a": {
+            "a": "スラリとして中性的、シャープな印象",
+            "b": "がっしりしていて、落ち着いた印象",
+            "c": "ふっくらとして、優しく親しみやすい印象",
+            "d": "筋肉質で、エネルギッシュな印象"
+        },
+        "map": {
+            "a": {"type": "multi_sign_emphasis", "value": ["双子座", "乙女座", "水瓶座"], "target": "ASC", "weight": 3, "reason": "身体的特徴から、中性的な印象を与える「風のサイン」や「乙女座」のASCの可能性が示唆されます。"},
+            "b": {"type": "multi_sign_emphasis", "value": ["牡牛座", "山羊座"], "target": "ASC", "weight": 3, "reason": "身体的特徴から、落ち着いた印象を与える「地のサイン」のASCの可能性が示唆されます。"},
+            "c": {"type": "multi_sign_emphasis", "value": ["蟹座", "魚座"], "target": "ASC", "weight": 3, "reason": "身体的特徴から、親しみやすい印象を与える「水のサイン」のASCの可能性が示唆されます。"},
+            "d": {"type": "multi_sign_emphasis", "value": ["牡羊座", "獅子座"], "target": "ASC", "weight": 3, "reason": "身体的特徴から、エネルギッシュな印象を与える「火のサイン」のASCの可能性が示唆されます。"}
+        }
     }
 ]
+
 
 # --- 占星術計算関数 ---
 
@@ -249,18 +266,12 @@ def score_chart(chart, answers):
         is_match = False
         
         if map_type == "quality":
-            if chart['qualities'][map_value] >= 4: # 10天体中4つ以上
+            if chart['qualities'][map_value] >= 4:
                 is_match = True
         elif map_type == "element":
-            if map_target == "月":
-                if chart['planets']['月'] in ELEMENTS[map_value]:
-                    is_match = True
-            elif map_target == "ASC":
-                 if chart['angles']['ASC'] in ELEMENTS[map_value]:
-                    is_match = True
-            elif map_target == "火星":
-                 if chart['planets']['火星'] in ELEMENTS[map_value]:
-                    is_match = True
+            if map_target == "月" and chart['planets']['月'] in ELEMENTS[map_value]: is_match = True
+            elif map_target == "ASC" and chart['angles']['ASC'] in ELEMENTS[map_value]: is_match = True
+            elif map_target == "火星" and chart['planets']['火星'] in ELEMENTS[map_value]: is_match = True
         elif map_type == "sign_emphasis":
             if "太陽" in map_target and chart['planets']['太陽'] == map_value: is_match = True
             if "月" in map_target and chart['planets']['月'] == map_value: is_match = True
@@ -269,19 +280,20 @@ def score_chart(chart, answers):
             if "金星" in map_target and chart['planets']['金星'] == map_value: is_match = True
             if "火星" in map_target and chart['planets']['火星'] == map_value: is_match = True
             if "全体" in map_target and (chart['angles']['ASC'] == map_value or chart['planets']['太陽'] == map_value): is_match = True
+        
+        # ▼▼▼ 変更点2：新しいマッピングタイプを追加 ▼▼▼
+        elif map_type == "multi_sign_emphasis":
+            if map_target == "ASC" and chart['angles']['ASC'] in map_value:
+                is_match = True
 
         elif map_type == "emphasis":
-             # 天体やハウスの強調度は、より複雑なロジックが必要なため、今回はサインの一致度で代用
-             if chart['planets'].get(map_value): # 天体名がキーとして存在するか
-                score += map_weight / 2 # 簡易的な加点
+             if chart['planets'].get(map_value):
+                score += map_weight / 2
                 reasons.append(f"{map_reason}（{map_value}の存在）")
-
         elif map_type == "house_emphasis":
-            # ハウス計算は複雑なため、今回はMCサインの一致度で代用
             if chart['angles']['MC'] in SIGN_NAMES:
-                 score += map_weight / 2 # 簡易的な加点
+                 score += map_weight / 2
                  reasons.append(f"{map_reason}（MCの存在）")
-
 
         if is_match:
             score += map_weight
@@ -293,7 +305,7 @@ def score_chart(chart, answers):
 
 st.set_page_config(page_title="心理占星術レクティフィケーション", page_icon="🔮")
 st.title("🔮 心理占星術レクティフィケーション")
-st.write("10の質問に答えることで、あなたの性格から最も可能性の高い出生時刻を推定します。")
+st.write("11の質問に答えることで、あなたの性格から最も可能性の高い出生時刻を推定します。")
 
 # --- 入力セクション ---
 st.header("1. 基本情報を入力してください")
@@ -308,7 +320,6 @@ answers = []
 for i, q_data in enumerate(QUESTIONS):
     st.subheader(q_data["q"])
     ans = st.radio("選択肢:", list(q_data["a"].values()), key=f"q{i}", index=None, horizontal=True)
-    # 選択肢のテキストからキー（a, b, c, d）を取得
     ans_key = next((key for key, value in q_data["a"].items() if value == ans), None)
     answers.append(ans_key)
 
@@ -340,7 +351,6 @@ if st.button("鑑定する 🚀", type="primary"):
             minute = minute_of_day % 60
             candidate_time = time(hour, minute)
             
-            # 進捗バー更新
             bar.progress((i + 1) / total_steps, text=f"出生時刻の候補を検証中... ({candidate_time.strftime('%H:%M')})")
             
             birth_dt = datetime.combine(birth_date, candidate_time)
@@ -364,7 +374,7 @@ if st.button("鑑定する 🚀", type="primary"):
             
             st.success(f"あなたの性格に最も一致する可能性の高い出生時刻は以下の通りです。")
 
-            for i, candidate in enumerate(sorted_candidates[:5]): # 上位5件を表示
+            for i, candidate in enumerate(sorted_candidates[:5]):
                 percentage = (candidate['score'] / max_score * 100) if max_score > 0 else 0
                 
                 with st.container(border=True):
@@ -372,7 +382,6 @@ if st.button("鑑定する 🚀", type="primary"):
                     st.progress(int(percentage), text=f"可能性: {percentage:.1f}%")
                     
                     st.markdown("**▼ 西洋占星術の観点からの根拠**")
-                    # 根拠の重複を削除して表示
                     unique_reasons = sorted(list(set(candidate['reasons'])))
                     for reason in unique_reasons:
                         st.markdown(f"- {reason}")
